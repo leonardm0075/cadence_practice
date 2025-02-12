@@ -11,12 +11,13 @@ module mac_unit_tb;
     logic clk;
     logic rstn;
     logic [DATA_WIDTH_INITIAL-1:0] a_data_in, b_data_in;
-    logic mac_compute;
+    logic mac_start;
 
     // Outputs
     logic c_we, a_b_re;
-    logic [$clog2(DATA_WIDTH_INITIAL)-1:0] a_addr_out, b_addr_out;
-    logic [$clog2(DATA_WIDTH_FINAL)-1:0] c_addr_out;
+    logic [$clog2(param_M*param_K)-1:0] a_addr_out; 
+    logic [$clog2(param_K*param_N)-1:0] b_addr_out;
+    logic [$clog2(param_M*param_N)-1:0] c_addr_out;
     logic [DATA_WIDTH_FINAL-1:0] c_data_out;
     logic mac_done;
 
@@ -32,7 +33,7 @@ module mac_unit_tb;
         .rstn(rstn),
         .a_data_in(a_data_in),
         .b_data_in(b_data_in),
-        .mac_compute(mac_compute),
+        .mac_start(mac_start),
         .c_we(c_we),
         .a_b_re(a_b_re),
         .a_addr_out(a_addr_out),
@@ -47,6 +48,8 @@ module mac_unit_tb;
     // local matrix buffers for A, B, and C
     logic [(param_M * param_K)-1:0][DATA_WIDTH_INITIAL-1:0] matrix_a;
     logic [(param_K * param_N)-1:0][DATA_WIDTH_INITIAL-1:0] matrix_b;
+    logic [(param_N * param_K)-1:0][DATA_WIDTH_INITIAL-1:0] matrix_b_transposed;
+
     logic [(param_M * param_N)-1:0][DATA_WIDTH_FINAL-1:0] matrix_c; 
 
     // clock generation
@@ -54,10 +57,10 @@ module mac_unit_tb;
         #5 clk = ~clk;
     end
 
-    initial begin
-        $shm_open("mem_unit_tb.shm");
-        $shm_probe("AS");
-    end
+    //initial begin
+    //    $shm_open("mem_unit_tb.shm");
+    //    $shm_probe("AS");
+    //end
 
     // Initialize values
     initial begin
@@ -65,7 +68,7 @@ module mac_unit_tb;
         rstn = 0;
         a_data_in = '0;
         b_data_in = '0;
-        mac_compute = 0;
+        mac_start = 0;
         matrix_a = '0;
         matrix_b = '0;
         matrix_c = '0;
@@ -86,13 +89,15 @@ module mac_unit_tb;
         // transpose matrix B
         for (int i=0; i<param_K; i++) begin
             for (int j=0; j<param_N; j++) begin
-                matrix_b[j * param_K + i] = matrix_b[i * param_N + j];
+                matrix_b_transposed[j * param_K + i] = matrix_b[i * param_N + j];
             end
         end
 
+        matrix_b = matrix_b_transposed;
+
 
         #10;
-        mac_compute = 1;
+        mac_start = 1;
 
         forever begin
             if(a_b_re) begin
@@ -105,15 +110,13 @@ module mac_unit_tb;
             if (c_we) begin
                 assert (c_addr_out !== 'X) else $error("ERROR: c_addr_out contains an X");
                 matrix_c[c_addr_out] <= c_data_out;
-
             end
 
             @(posedge clk);
+            
+            mac_start = 0;
             assert (a_data_in !== 'X) else $error("ERROR: a_data_in contains an X");
             assert (b_data_in !== 'X) else $error("ERROR: b_data_in contains an X");
-
-
-
 
 
             if(mac_done) -> stop_event;
@@ -124,7 +127,8 @@ module mac_unit_tb;
 
     initial begin
         @(stop_event);
-        $finish;
+        @(posedge clk);
+        $stop;
 
 
     end
