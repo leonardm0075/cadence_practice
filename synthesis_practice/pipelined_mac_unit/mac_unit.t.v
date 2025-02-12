@@ -83,6 +83,7 @@ module mac_unit_tb;
             matrix_b[i] = i;
         end
 
+        // transpose matrix B
         for (int i=0; i<param_K; i++) begin
             for (int j=0; j<param_N; j++) begin
                 matrix_b[j * param_K + i] = matrix_b[i * param_N + j];
