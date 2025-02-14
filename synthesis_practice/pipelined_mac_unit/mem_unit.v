@@ -25,8 +25,9 @@ module mem_unit #(
     // because we are working with flattened matrices for C, i.e., each element is stored sequentially in a 1d array so the next element is just the next 32 bit element. This 
     // same line of reasoning applies to the a_addr and b_addr for accessing individual elements from the flattened input matrices A & B
     input logic [DATA_WIDTH_FINAL-1:0] c_data_in,
-    input logic [$clog2(DATA_WIDTH_FINAL)-1:0] c_addr,
-    input logic [$clog2(DATA_WIDTH_INITIAL)-1:0] a_addr, b_addr,
+    input logic [$clog2(param_M*param_N)-1:0] c_addr,
+    input logic [$clog2(param_M*param_K)-1:0] a_addr, 
+    input logic [$clog2(param_K*param_N)-1:0]b_addr,
     input logic c_we, c_re, a_b_we, a_b_re,
 
     // output data to be read from SRAM C will be sent as a flattened 1d array
@@ -59,7 +60,9 @@ module mem_unit #(
 
             if (c_re) begin
                 // buffer_c is read out in its entirety as a 1d flattened matrix
-                c_data_out <= buffer_c;
+                c_data_out <= buffer_c[(param_M * param_N)-1:0]; // only conclusion as to why c_data_out cant be assigned like this, c_data_out <= buffer_c, in QuestaSim is that 
+                                                                 // it is a tool specific problem where older versions might not infer correct behavior when working with multi-dimensional
+                                                                 // arrays. This is a known issue with QuestaSim and is not a problem with the code itself (I believe, test with VCS or Xcelium to verify).
             end
 
             if (a_b_we) begin
