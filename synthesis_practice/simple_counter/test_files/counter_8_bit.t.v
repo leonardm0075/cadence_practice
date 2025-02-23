@@ -9,6 +9,8 @@ module counter_8_bit_tb;
     // Outputs
     logic [7:0] count;
 
+    event stop_event;
+
     // Instantiate the Unit Under Test (UUT)
     counter_8_bit uut(
         .clk(clk),
@@ -27,20 +29,29 @@ module counter_8_bit_tb;
     initial begin
         // Start in reset
         rstn = 0;
-        #10; // Wait a clock 
+        #50; // Wait 5 clocks for reset to finish
         rstn = 1; // Come out of reset
-        //#20; // Wait 2 clocks so that reset can can come out of reset synchronously
+        #50; // Wait 5 clocks so that reset can can come out of reset synchronously
 
         // Check the counter value
-        for(int i=0; i<256; i=i+1) begin
-            #10; // Wait a clock
+        forever begin 
+            if (count == 8'b11111111) begin
+                $display("Counter reached 255, stopping simulation");
+                -> stop_event;
+            end
             $display("Time=%0t, count=%d", $time, count);
+            @(posedge clk);
+
         end
 
     end
 
 
+    initial begin
+        @(stop_event);
+        $stop;
 
+    end
 
 
 
