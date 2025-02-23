@@ -36,8 +36,6 @@ module mac_unit #(
 );
     // pipeline registers and control signals
     logic [DATA_WIDTH_FINAL-1:0] mult_reg, accum_reg;
-    logic [$clog2(param_M)-1:0] row_mult_stage, row_accum_stage;
-    logic [$clog2(param_N)-1:0] col_mult_stage, col_accum_stage;
     logic [$clog2(param_K)-1:0] k_mult_stage, k_accum_stage;
     logic first_read_delay, mult_valid;
     
@@ -66,10 +64,6 @@ module mac_unit #(
             // pipeline registers & control signals
             mult_reg            <= '0;
             accum_reg           <= '0;
-            row_mult_stage      <= '0;
-            row_accum_stage     <= '0;
-            col_mult_stage      <= '0;
-            col_accum_stage     <= '0;
             k_mult_stage        <= '0;
             k_accum_stage       <= '0;
             first_read_delay    <= 1'b0;
@@ -100,8 +94,6 @@ module mac_unit #(
                 b_addr  <= b_addr + 1;
 
                 // move pipeline values through initial read stage
-                row_mult_stage      <= row;
-                col_mult_stage      <= col;
                 k_mult_stage        <= k;
 
                 // check conditions to see if we need to update any control signals that correspond with reading input data 
@@ -140,8 +132,6 @@ module mac_unit #(
                 mult_valid  <= 1'b1;
                 
                 // move pipeline values through mult stage
-                row_accum_stage     <= row_mult_stage;
-                col_accum_stage     <= col_mult_stage;
                 k_accum_stage       <= k_mult_stage;
             end else begin
                 mult_valid <= 1'b0;
