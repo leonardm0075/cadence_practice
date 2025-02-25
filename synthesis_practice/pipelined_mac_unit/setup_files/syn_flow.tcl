@@ -9,7 +9,7 @@
 set DESIGN mac_top
 set GEN_EFF medium
 set MAP_OPT_EFF medium
-set SDC_DIR {/home/lm04867/cadence_practice/synthesis_practice/pipelined_mac_unit/pipe_lined_mac_unit_genus}
+set SDC_DIR {/home/lm04867/cadence_practice/synthesis_practice/pipelined_mac_unit}
 set_db / .init_lib_search_path {/home/lm04867/cadence_practice/libs/freepdk-45nm/pkgs/base}
 set_db / .init_hdl_search_path {/home/lm04867/cadence_practice/synthesis_practice/pipelined_mac_unit/src_files}
 

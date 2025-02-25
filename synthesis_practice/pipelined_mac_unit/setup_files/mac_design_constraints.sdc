@@ -3,7 +3,7 @@ set clock_net clk
 set clock_name 100MHz_clk
 set clock_period 10.0
 
-set_units -time ns -capacitance pF 
+set_units -time ns -capacitance fF 
 
 create_clock -name ${clock_name} -period ${clock_period} [get_ports ${clock_net}]
 
@@ -21,10 +21,12 @@ set_clock_latency -source -late 0.02 [get_clocks ${clock_name}] ;# 20ps removed 
 
 set_max_fanout 20 [current_design]
 
-set_drive 4.0 [all_inputs]
-set_load 0.1 [all_outputs]
+set_driving_cell -no_design_rule -lib_cell $ADK_DRIVING_CELL [all_inputs]
+set_load -pin_load $ADK_TYPICAL_ON_CHIP_LOAD [all_outputs]
 
 set_wire_load_mode "enclosed"
 
 set_output_delay -clock ${clock_name} -add_delay 1.0 [all_outputs]
 set_input_delay -clock ${clock_name} -add_delay 1.0 [all_inputs]
+
+# set_max_transistion
