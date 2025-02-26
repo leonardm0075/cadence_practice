@@ -19,76 +19,32 @@ module mac_top_tb;
     logic c_re_ext;
 
     // Outputs
-    logic [(param_M*param_N)-1:0][DATA_WIDTH_FINAL-1:0] c_data_out_ext;
+    logic [(param_M*param_N*DATA_WIDTH_FINAL)-1:0] c_data_out_ext;
     logic mac_done;
     logic block2host_val;
     logic host2block_rdy;
-
     // Instantiate the Unit Under Test (UUT)
-        mac_top uut (
-            .clk(clk),
-            .rstn(rstn),
-            .host2block_val(host2block_val),
-            .block2host_rdy(block2host_rdy),
-            .\a_data_in_ext[0] (a_data_in_ext[0]),
-            .\a_data_in_ext[1] (a_data_in_ext[1]),
-            .\a_data_in_ext[2] (a_data_in_ext[2]),
-            .\a_data_in_ext[3] (a_data_in_ext[3]),
-            .\a_data_in_ext[4] (a_data_in_ext[4]),
-            .\a_data_in_ext[5] (a_data_in_ext[5]),
-            .\a_data_in_ext[6] (a_data_in_ext[6]),
-            .\a_data_in_ext[7] (a_data_in_ext[7]),
-            .\a_data_in_ext[8] (a_data_in_ext[8]),
-            .\a_data_in_ext[9] (a_data_in_ext[9]),
-            .\a_data_in_ext[10] (a_data_in_ext[10]),
-            .\a_data_in_ext[11] (a_data_in_ext[11]),
-            .\a_data_in_ext[12] (a_data_in_ext[12]),
-            .\a_data_in_ext[13] (a_data_in_ext[13]),
-            .\a_data_in_ext[14] (a_data_in_ext[14]),
-            .\a_data_in_ext[15] (a_data_in_ext[15]),
-            .\b_data_in_ext[0] (b_data_in_ext[0]),
-            .\b_data_in_ext[1] (b_data_in_ext[1]),
-            .\b_data_in_ext[2] (b_data_in_ext[2]),
-            .\b_data_in_ext[3] (b_data_in_ext[3]),
-            .\b_data_in_ext[4] (b_data_in_ext[4]),
-            .\b_data_in_ext[5] (b_data_in_ext[5]),
-            .\b_data_in_ext[6] (b_data_in_ext[6]),
-            .\b_data_in_ext[7] (b_data_in_ext[7]),
-            .\b_data_in_ext[8] (b_data_in_ext[8]),
-            .\b_data_in_ext[9] (b_data_in_ext[9]),
-            .\b_data_in_ext[10] (b_data_in_ext[10]),
-            .\b_data_in_ext[11] (b_data_in_ext[11]),
-            .\b_data_in_ext[12] (b_data_in_ext[12]),
-            .\b_data_in_ext[13] (b_data_in_ext[13]),
-            .\b_data_in_ext[14] (b_data_in_ext[14]),
-            .\b_data_in_ext[15] (b_data_in_ext[15]),
-            .a_b_we_ext(a_b_we_ext),
-            .c_re_ext(c_re_ext),
-            .\c_data_out_ext[0] (c_data_out_ext[0]),
-            .\c_data_out_ext[1] (c_data_out_ext[1]),
-            .\c_data_out_ext[2] (c_data_out_ext[2]),
-            .\c_data_out_ext[3] (c_data_out_ext[3]),
-            .\c_data_out_ext[4] (c_data_out_ext[4]),
-            .\c_data_out_ext[5] (c_data_out_ext[5]),
-            .\c_data_out_ext[6] (c_data_out_ext[6]),
-            .\c_data_out_ext[7] (c_data_out_ext[7]),
-            .\c_data_out_ext[8] (c_data_out_ext[8]),
-            .\c_data_out_ext[9] (c_data_out_ext[9]),
-            .\c_data_out_ext[10] (c_data_out_ext[10]),
-            .\c_data_out_ext[11] (c_data_out_ext[11]),
-            .\c_data_out_ext[12] (c_data_out_ext[12]),
-            .\c_data_out_ext[13] (c_data_out_ext[13]),
-            .\c_data_out_ext[14] (c_data_out_ext[14]),
-            .\c_data_out_ext[15] (c_data_out_ext[15]),
-            .mac_done(mac_done),
-            .block2host_val(block2host_val),
-            .host2block_rdy(host2block_rdy)
-        );
+    mac_top uut (
+        .clk(clk),
+        .rstn(rstn),
+        .host2block_val(host2block_val),
+        .block2host_rdy(block2host_rdy),
+        .a_data_in_ext(a_data_in_ext),
+        .b_data_in_ext(b_data_in_ext),
+        .a_b_we_ext(a_b_we_ext),
+        .c_re_ext(c_re_ext),
+        .c_data_out_ext(c_data_out_ext),
+        .mac_done(mac_done),
+        .block2host_val(block2host_val),
+        .host2block_rdy(host2block_rdy)
+    );
 
     logic [(param_M * param_K)-1:0][DATA_WIDTH_INITIAL-1:0] matrix_a;
     logic [(param_K * param_N)-1:0][DATA_WIDTH_INITIAL-1:0] matrix_b;
     logic [(param_N * param_K)-1:0][DATA_WIDTH_INITIAL-1:0] matrix_b_transposed;
-    logic [(param_M * param_N)-1:0][DATA_WIDTH_FINAL-1:0] matrix_c;
+    logic [(param_M*param_N*DATA_WIDTH_FINAL)-1:0] matrix_c;
+    logic [DATA_WIDTH_FINAL-1:0] extracted_value;
+
 
     event stop_event;
 
@@ -146,6 +102,13 @@ module mac_top_tb;
         matrix_c = c_data_out_ext;
         c_re_ext = 0;
         block2host_rdy = 0;
+        #10;
+
+        for (int i=0; i<param_M*param_N*DATA_WIDTH_FINAL-1; i=i+DATA_WIDTH_FINAL) begin
+            extracted_value = matrix_c[i +: DATA_WIDTH_FINAL];
+            $display("Matrix C[%0d] = %0d", i/DATA_WIDTH_FINAL, extracted_value);
+        end
+
         #50;
         $display("Testbench Completed");
         $stop;

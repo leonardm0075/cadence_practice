@@ -15,7 +15,7 @@ module mac_top #(
     input logic [(param_K*param_N)-1:0][DATA_WIDTH_INITIAL-1:0] b_data_in_ext,
     input logic a_b_we_ext, c_re_ext, 
 
-    output logic [(param_M * param_N)-1:0][DATA_WIDTH_FINAL-1:0] c_data_out_ext,
+    output logic [(param_M * param_N * DATA_WIDTH_FINAL)-1:0] c_data_out_ext,
     output logic mac_done, block2host_val, host2block_rdy
 
 );
