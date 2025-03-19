@@ -20,13 +20,21 @@ module mac_top #(
 
 );
 
+
     logic mac_start_ftop, a_b_re_fmac, c_we_fmac;
     logic [DATA_WIDTH_INITIAL-1:0] a_data_out_fmem, b_data_out_fmem;
     logic [$clog2(param_M*param_K)-1:0] a_addr_out_fmac;
     logic [$clog2(param_K*param_N)-1:0] b_addr_out_fmac;
     logic [DATA_WIDTH_FINAL-1:0] c_data_out_fmac;
     logic [$clog2(param_M*param_N)-1:0] c_addr_out_fmac;
-    
+    logic [(param_M * param_N * DATA_WIDTH_FINAL)-1:0] c_data_out_from_mem_unit;
+    logic mac_done_from_mac_unit;
+    logic block2host_val_int, host2block_rdy_int;
+
+    assign c_data_out_ext   = c_data_out_from_mem_unit;
+    assign mac_done         = mac_done_from_mac_unit;
+    assign block2host_val   = block2host_val_int;
+    assign host2block_rdy   = host2block_rdy_int;
 
     typedef enum logic [1:0] {
         IDLE,
@@ -57,21 +65,21 @@ module mac_top #(
                 end
             end
             LOADING: begin
-                if (~(host2block_val && host2block_rdy)) begin
+                if (~(host2block_val && host2block_rdy_int)) begin
                     next_state = COMPUTING;
                 end else begin
                     next_state = LOADING;
                 end
             end
             COMPUTING: begin
-                if (mac_done) begin
+                if (mac_done_from_mac_unit) begin
                     next_state = DONE;
                 end else begin
                     next_state = COMPUTING;
                 end
             end
             DONE: begin
-                if (~(block2host_val && block2host_rdy)) begin
+                if (~(block2host_val_int && block2host_rdy)) begin
                     next_state = IDLE;
                 end else begin
                     next_state = DONE;
@@ -87,32 +95,32 @@ module mac_top #(
     always_comb begin
         case (state) 
             IDLE: begin
-                block2host_val = 1'b0;
-                host2block_rdy = 1'b0;
+                block2host_val_int = 1'b0;
+                host2block_rdy_int = 1'b0;
                 mac_start_ftop = 1'b0;
             end
 
             LOADING: begin
-                block2host_val = 1'b0;
-                host2block_rdy = 1'b1;
+                block2host_val_int = 1'b0;
+                host2block_rdy_int = 1'b1;
                 mac_start_ftop = 1'b0;
             end
 
             COMPUTING: begin
-                block2host_val = 1'b0;
-                host2block_rdy = 1'b0;
+                block2host_val_int = 1'b0;
+                host2block_rdy_int = 1'b0;
                 mac_start_ftop = 1'b1;
             end
 
             DONE: begin
-                block2host_val = 1'b1;
-                host2block_rdy = 1'b0;
+                block2host_val_int = 1'b1;
+                host2block_rdy_int = 1'b0;
                 mac_start_ftop = 1'b0;
             end
 
             default: begin
-                block2host_val = 1'b0;
-                host2block_rdy = 1'b0;
+                block2host_val_int = 1'b0;
+                host2block_rdy_int = 1'b0;
                 mac_start_ftop = 1'b0;
             end
 
@@ -143,7 +151,7 @@ module mac_top #(
         .c_addr_out(c_addr_out_fmac),// c_addr_out to mem_unit
         .c_we(c_we_fmac),      // c_we to mem_unit
 
-        .mac_done(mac_done) // mac_done to top & external block
+        .mac_done(mac_done_from_mac_unit) // mac_done to top & external block
     );
 
     // instantiate mem_unit
@@ -167,7 +175,7 @@ module mac_top #(
         .b_addr(b_addr_out_fmac),             // b_addr from mac_unit
 
         .c_data_in(c_data_out_fmac),          // c_data in from mac_unit
-        .c_data_out(c_data_out_ext),         // c_data out to external block
+        .c_data_out(c_data_out_from_mem_unit),         // c_data out to external block
         .c_addr(c_addr_out_fmac),             // c_addr from mac_unit
         .c_we(c_we_fmac),               // c_we from mac_unit
         .c_re(c_re_ext)            // c_re from external block

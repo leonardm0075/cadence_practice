@@ -4,16 +4,14 @@
 
 
 ##############################################################################
-## Preset global variables and attributes and source ADK
+## Preset global variables and attributes
 ##############################################################################
-set DESIGN mac_top
+set DESIGN counter_8_bit
 set GEN_EFF medium
 set MAP_OPT_EFF medium
-set SDC_DIR {/home/lm04867/cadence_practice/synthesis_practice/pipelined_mac_unit/setup_files}
+set SDC_DIR {/home/lm04867/cadence_practice/synthesis_practice/simple_counter}
 set_db / .init_lib_search_path {/home/lm04867/cadence_practice/libs/freepdk-45nm/pkgs/base}
-set_db / .init_hdl_search_path {/home/lm04867/cadence_practice/synthesis_practice/pipelined_mac_unit/src_files}
-
-source {/home/lm04867/cadence_practice/libs/freepdk-45nm/pkgs/base/adk.tcl}
+set_db / .init_hdl_search_path {/home/lm04867/cadence_practice/synthesis_practice/simple_counter/src_files}
 
 ###############################################################
 ## Library setup
@@ -27,7 +25,7 @@ set_db / .library stdcells.lib
 ## Load Design
 ####################################################################
 
-read_hdl -language sv mac_top.v mac_unit.v mem_unit.v
+read_hdl -language sv counter_8_bit.v
 elaborate $DESIGN
 time_info Elaboration 
 
@@ -36,13 +34,8 @@ check_design -unresolved
 ####################################################################
 ## Constraints Setup
 ####################################################################
-read_sdc [file join $SDC_DIR mac_design_constraints.sdc]
+read_sdc [file join $SDC_DIR simple_counter_dc.sdc]
 
-####################################################################
-## Enable/Disable Clock Gating
-####################################################################
-set_db design:mac_top .lp_clock_gating_exclude False
-set_db root: .lp_insert_clock_gating True
 
 ####################################################################################################
 ## Synthesizing to generic 
@@ -79,4 +72,3 @@ time_info FINAL
 puts "============================"
 puts "Synthesis Finished ........."
 puts "============================"
-

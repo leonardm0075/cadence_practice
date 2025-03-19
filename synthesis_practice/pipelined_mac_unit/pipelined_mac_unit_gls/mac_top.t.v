@@ -41,7 +41,7 @@ module mac_top_tb;
 
     `ifdef SDF_TEST
         initial begin
-            $sdf_annotate("mac_top.sdf", mac_top_tb.uut);
+            $sdf_annotate("synthesized_netlist.sdf", uut);
         end
     `endif
 
