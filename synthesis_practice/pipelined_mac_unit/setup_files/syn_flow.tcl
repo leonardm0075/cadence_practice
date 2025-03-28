@@ -4,7 +4,7 @@
 
 
 ##############################################################################
-## Preset global variables and attributes and source ADK
+## Preset global variables and attributes and source ADK and Clock Gating
 ##############################################################################
 set DESIGN mac_top
 set GEN_EFF medium
@@ -14,6 +14,7 @@ set_db / .init_lib_search_path {/home/lm04867/cadence_practice/libs/freepdk-45nm
 set_db / .init_hdl_search_path {/home/lm04867/cadence_practice/synthesis_practice/pipelined_mac_unit/src_files}
 
 source {/home/lm04867/cadence_practice/libs/freepdk-45nm/pkgs/base/adk.tcl}
+#set_db root: .lp_insert_clock_gating True
 
 ###############################################################
 ## Library setup
@@ -22,33 +23,28 @@ read_libs stdcells.lib
 set_db / .library stdcells.lib
 
 
-
 ####################################################################
 ## Load Design
 ####################################################################
 
 read_hdl -language sv mac_top.v mac_unit.v mem_unit.v
-elaborate $DESIGN
+elaborate 
 time_info Elaboration 
 
-check_design -unresolved
+check_design -unresolved 
 
 ####################################################################
 ## Constraints Setup
 ####################################################################
 read_sdc [file join $SDC_DIR mac_design_constraints.sdc]
 
-####################################################################
-## Enable/Disable Clock Gating
-####################################################################
-set_db design:mac_top .lp_clock_gating_exclude False
-set_db root: .lp_insert_clock_gating True
+
 
 ####################################################################################################
 ## Synthesizing to generic 
 ####################################################################################################
 set_db / .syn_generic_effort $GEN_EFF
-syn_generic
+syn_generic 
 puts "Runtime & Memory after 'syn_generic"
 time_info GENERIC 
 
@@ -65,7 +61,7 @@ time_info MAPPED
 ## Optimize Netlist
 #######################################################################################################
 set_db / .syn_opt_effort $MAP_OPT_EFF
-syn_opt
+syn_opt 
 
 puts "Runtime & Memory after 'syn_opt'"
 time_info OPT
